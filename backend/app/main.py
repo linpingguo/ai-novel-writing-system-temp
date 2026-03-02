@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
 from app.database import engine
-from app.api import auth, projects, characters, outline
+from app.api import auth, projects, characters, chapers
 
 app = FastAPI(
     title=settings.app_name,
@@ -22,7 +22,7 @@ app.add_middleware(
 app.include_router(auth.router, prefix="/api/auth", tags=["Authentication"])
 app.include_router(projects.router, prefix="/api/projects", tags=["Projects"])
 app.include_router(characters.router, prefix="/api/projects/{project_id}/characters", tags=["Characters"])
-app.include_router(outline.router, prefix="/api/projects/{project_id}/outline", tags=["Outline"])
+app.include_router(chapters.router, prefix="/api/projects/{project_id}/chapters", tags=["Chapters"])
 
 
 @app.on_event("startup")
