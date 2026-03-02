@@ -1,74 +1,63 @@
 """应用配置"""
-import os
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-class Config:
-    """应用配置类"""
+class Config(BaseSettings):
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        case_sensitive=False,
+        extra='allow'
+    )
 
-    APP_NAME = "AI Novel Writing System"
-    APP_VERSION = "1.0.0"
-    DEBUG = False
+    APP_NAME: str = "AI Novel Writing System"
+    APP_VERSION: str = "1.0.0"
+    DEBUG: bool = False
 
-    SECRET_KEY = ""
-    ALGORITHM = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES = 30
+    SECRET_KEY: str = ""
+    ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
-    # 数据库配置
-    POSTGRES_USER = "noveluser"
-    POSTGRES_PASSWORD = "novelpass"
-    POSTGRES_DB = "novel_db"
-    POSTGRES_HOST = "localhost"
-    POSTGRES_PORT = 5432
+    POSTGRES_USER: str = "noveluser"
+    POSTGRES_PASSWORD: str = "novelpass"
+    POSTGRES_DB: str = "novel_db"
+    POSTGRES_HOST: str = "localhost"
+    POSTGRES_PORT: int = 5432
 
-    # Redis配置
-    REDIS_URL = "redis://redis:6379"
+    REDIS_URL: str = "redis://redis:6379"
 
-    # MinIO配置
-    MINIO_ACCESS_KEY = "minioadmin"
-    MINIO_SECRET_KEY = "minioadmin"
-    MINIO_ENDPOINT = "localhost:9000"
+    MINIO_ACCESS_KEY: str = "minioadmin"
+    MINIO_SECRET_KEY: str = "minioadmin"
 
-    # OpenAI配置
-    OPENAI_API_KEY = ""
-    CLAUDE_API_KEY = ""
+    MINIO_ENDPOINT: str = "localhost:9000"
 
-    # Milvus配置
-    MILVUS_HOST = "localhost"
-    MILVUS_PORT = 19530
+    OPENAI_API_KEY: str = ""
+    CLAUDE_API_KEY: str = ""
 
-    # CORS配置
-    CORS_ORIGINS = ["http://localhost:3000", "http://127.0.0.1.3000"]
+    MILVUS_HOST: str = "localhost"
+    MILVUS_PORT: int = 19530
+
+    CORS_ORIGINS: list[str] = ["http://localhost:3000", "http://127.0.0.1:3000"]
+
+    @property
+    def database_url(self) -> str:
+        return f"postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
+
+    @property
+    def database_url_sync(self) -> str:
+        return f"postgresql://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
+
+    @property
+    def redis_url_sync(self) -> str:
+        return f"redis://{self.MILVUS_HOST}:{self.MILVUS_PORT}"
+
+    @property
+    def minio_url(self) -> str:
+        return f"http://{self.MINIO_ACCESS_KEY}:{self.MINIO_SECRET_KEY}@{self.MINIO_ENDPOINT}"
+
+    @property
+    def milvus_url(self) -> str:
+        return f"http://{self.MILVUS_HOST}:{self.MILVUS_PORT}"
 
 
 config = Config()
-
-def get_settings() -> Config:
-    return config
-
-
-def get_database_url() -> str:
-    return f"postgresql+asyncpg://{config.POSTGRES_USER}:{config.POSTGRES_PASSWORD}@{config.POSTGRES_HOST}:{config.POSTGRES_PORT}/{config.POSTGRES_DB}"
-
-
-def get_database_url_sync() -> str:
-    return f"postgresql://{config.POSTGRES_USER}:{config.POSTGRES_PASSWORD}@{config.POSTGRES_HOST}:{config.POSTGRES_PORT}/{config.POSTGRES_DB}"
-
-
-def get_redis_url() -> str:
-    return config.REDIS_URL
-
-
-def get_redis_url_sync() -> str:
-    return f"redis://{config.MILVUS_HOST}:{config.MILVUS_PORT}"
-
-
-def get_minio_endpoint() -> str:
-    return f"http://{config.MINIO_ACCESS_KEY}:{config.MINIO_SECRET_KEY}@{config.MINIO_ENDPOINT}/"
-
-
-def get_redis_url_sync() -> str:
-    return f"redis://{config.MILVUS_HOST}:{config.MILVUS_PORT}"
-
-
-def get_milvus_url() -> str:
-    return f"http://{config.MILVUS_HOST}:{config.MILVUS_PORT}"

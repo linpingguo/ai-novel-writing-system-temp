@@ -1,10 +1,5 @@
-"""测试配置"""
+"""端到端测试配置"""
 import pytest
-import sys
-import os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
-
-from app.config import settings
 
 
 def pytest_configure():
@@ -12,7 +7,7 @@ def pytest_configure():
     return {
         "asyncio_mode": "auto",
         "testpaths": [
-            "app/api"
+            "app/"
         ],
         "python_files": ["app"],
         "disable_warnings": [
@@ -25,30 +20,48 @@ def pytest_configure():
 @pytest.fixture(scope="session")
 async def db_session():
     """数据库会话fixture"""
-    from app.database import async_session_maker
-    async for session in async_session_maker():
-        yield session
-        await session.close()
+    from sqlalchemy import create_engine
+    sqlalchemy.orm import sessionmaker
+
+    TEST_DATABASE_URL = "sqlite+aios:///:memory:"
+
+    engine = create_engine(TEST_DATABASE_URL)
+    Base.metadata.create_all(bind=engine)
+
+    async_session = sessionmaker(bind=engine, autocommit=False, autoflush=False, expire_on_commit=False)
+
+    yield async_session
+    await engine.dispose()
 
 
 @pytest.fixture
-def mock_ai_response():
-    """Mock AI响应"""
-    return {
-        "id": "chatcmpl-123",
-        "object": "chat.completion",
-        "created": 17123456789.012,
-        "model": "gpt-4",
-        "choices": [{
-            "message": {"role": "user", "content": "This is a test response"}
-        }]
-    }
+async def client():
+    """HTTP客户端fixture"""
+    from httpx import AsyncClient
+
+    return AsyncClient(base_url="http://test")
 
 
 @pytest.fixture
-def mock_openai_client():
-    """Mock OpenAI客户端"""
-    class MockClient:
-        async def chatcompletions_create(self, *args, **kwargs):
-            return mock_ai_response()
-    return MockClient()
+def mock_settings():
+    """Mock配置"""
+    from unittest.mock import MagicMock
+
+    mock = MagicMock()
+    mock.APP_NAME = "Test Config"
+    mock.APP_VERSION = "1.0.0"
+    mock.DEBUG = False
+
+    mock.SECRET_KEY = "test_secret"
+    mock.ALGORITHM = "HS256"
+    mock.ACCESS_TOKEN_EXPIRE_MINUTES = 30
+
+    mock.POSTGRES_USER = "noveluser"
+    mock.POSTGRES_PASSWORD = "novelpass"
+    mock.POSTGRES_DB = "novel_db"
+    mock.POSTGRES_HOST = "localhost"
+    mock.POSTGRES_PORT = 5432
+
+    mock.REDIS_URL = "redis://localhost:6379"
+
+    return mock
