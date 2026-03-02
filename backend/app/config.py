@@ -1,44 +1,74 @@
 """应用配置"""
-from typing import Optional
+import os
 
 
 class Config:
     """应用配置类"""
-    APP_NAME: str = "AI Novel Writing System"
-    APP_VERSION: str = "1.0.0"
-    DEBUG: bool = False
 
-    SECRET_KEY: str = ""
-    ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    APP_NAME = "AI Novel Writing System"
+    APP_VERSION = "1.0.0"
+    DEBUG = False
 
-    POSTGRES_USER: str = "noveluser"
-    POSTGRES_PASSWORD: str = "novelpass"
-    POSTGRES_DB: str = "novel_db"
-    POSTGRES_HOST: str = "localhost"
-    POSTGRES_PORT: int = 5432
+    SECRET_KEY = ""
+    ALGORITHM = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
-    REDIS_URL: str = "redis://redis:6379"
+    # 数据库配置
+    POSTGRES_USER = "noveluser"
+    POSTGRES_PASSWORD = "novelpass"
+    POSTGRES_DB = "novel_db"
+    POSTGRES_HOST = "localhost"
+    POSTGRES_PORT = 5432
 
-    MINIO_ACCESS_KEY: str = "minioadmin"
-    MINIO_SECRET_KEY: str = "minioadmin"
-    MINIO_ENDPOINT: str = "localhost:9000"
+    # Redis配置
+    REDIS_URL = "redis://redis:6379"
 
-    OPENAI_API_KEY: str = ""
-    CLAUDE_API_KEY: str = ""
+    # MinIO配置
+    MINIO_ACCESS_KEY = "minioadmin"
+    MINIO_SECRET_KEY = "minioadmin"
+    MINIO_ENDPOINT = "localhost:9000"
 
-    MILVUS_HOST: str = "localhost"
-    MILVUS_PORT: int = 19530
+    # OpenAI配置
+    OPENAI_API_KEY = ""
+    CLAUDE_API_KEY = ""
 
-    CORS_ORIGINS: list[str] = ["http://localhost:3000", "http://127.0.0:3000"]
+    # Milvus配置
+    MILVUS_HOST = "localhost"
+    MILVUS_PORT = 19530
 
-    @property
-    def database_url(self) -> str:
-        return f"postgresql://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
-
-    @property
-    def database_url_sync(self) -> str:
-        return f"postgresql://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
+    # CORS配置
+    CORS_ORIGINS = ["http://localhost:3000", "http://127.0.0.1.3000"]
 
 
 config = Config()
+
+def get_settings() -> Config:
+    return config
+
+
+def get_database_url() -> str:
+    return f"postgresql+asyncpg://{config.POSTGRES_USER}:{config.POSTGRES_PASSWORD}@{config.POSTGRES_HOST}:{config.POSTGRES_PORT}/{config.POSTGRES_DB}"
+
+
+def get_database_url_sync() -> str:
+    return f"postgresql://{config.POSTGRES_USER}:{config.POSTGRES_PASSWORD}@{config.POSTGRES_HOST}:{config.POSTGRES_PORT}/{config.POSTGRES_DB}"
+
+
+def get_redis_url() -> str:
+    return config.REDIS_URL
+
+
+def get_redis_url_sync() -> str:
+    return f"redis://{config.MILVUS_HOST}:{config.MILVUS_PORT}"
+
+
+def get_minio_endpoint() -> str:
+    return f"http://{config.MINIO_ACCESS_KEY}:{config.MINIO_SECRET_KEY}@{config.MINIO_ENDPOINT}/"
+
+
+def get_redis_url_sync() -> str:
+    return f"redis://{config.MILVUS_HOST}:{config.MILVUS_PORT}"
+
+
+def get_milvus_url() -> str:
+    return f"http://{config.MILVUS_HOST}:{config.MILVUS_PORT}"
