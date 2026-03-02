@@ -2,7 +2,7 @@
 
 ## 阶段1: 项目基础设施搭建
 
-- [ ] 1. 初始化项目结构和开发环境
+- [x] 1. 初始化项目结构和开发环境
   - 创建前后端项目目录结构(frontend/backend)
   - 配置Docker Compose开发环境(db, redis, milvus, minio)
   - 设置Git仓库和.gitignore配置
